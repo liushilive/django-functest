@@ -1,6 +1,5 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
-from django.core.urlresolvers import reverse
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 from django_functest import FuncBaseMixin, Upload
@@ -10,6 +9,11 @@ from django_functest.exceptions import (
 from django_functest.tests.models import Thing
 
 from .base import ChromeBase, FirefoxBase, PhantomJSBase, WebTestBase
+
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 
 class TestCommonBase(FuncBaseMixin):
@@ -32,6 +36,13 @@ class TestCommonBase(FuncBaseMixin):
     def test_get_literal_url(self):
         url = reverse('admin:login')
         self.get_literal_url(url)
+        self.assertUrlsEqual(url)
+
+    def test_get_literal_url_with_full_url(self):
+        url = reverse('admin:login')
+        self.get_literal_url(url)
+        # Specifically check this idiom for refreshing a page:
+        self.get_literal_url(self.current_url)
         self.assertUrlsEqual(url)
 
     def test_assertUrlsEqual_default(self):

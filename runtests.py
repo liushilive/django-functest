@@ -6,7 +6,9 @@ import os
 import os.path
 import signal
 import sys
+import warnings
 
+import django
 import faulthandler
 from django.conf import settings
 from django.core.management import execute_from_command_line
@@ -14,6 +16,9 @@ from django.core.management import execute_from_command_line
 # If the process receives signal SIGUSR1, dump a traceback
 faulthandler.enable()
 faulthandler.register(signal.SIGUSR1)
+
+warnings.simplefilter("once", PendingDeprecationWarning)
+warnings.simplefilter("once", DeprecationWarning)
 
 
 parser = argparse.ArgumentParser(description="Run the test suite, or some tests. "
@@ -23,6 +28,8 @@ parser.add_argument("--show-browser", action='store_true',
                     help="Show the browser when running Selenium tests")
 parser.add_argument("--firefox-binary", action='store',
                     help="Path to binary to use for Firefox tests")
+parser.add_argument("--skip-selenium", action='store_true',
+                    help="Skip Selenium tests")
 parser.add_argument("--update-migration", action='store_true',
                     help="Don't run tests - just update the migration used for tests")
 parser.add_argument("-v", "--verbosity", action='store', dest="verbosity",
@@ -61,7 +68,8 @@ elif known_args.database == "postgres":
         }
     }
 
-settings.configure(
+
+settings_dict = dict(
     DEBUG=True,
     USE_TZ=True,
     DATABASES=DATABASES,
@@ -78,12 +86,11 @@ settings.configure(
         "django_functest.tests",
     ],
     SITE_ID=1,
-    MIDDLEWARE_CLASSES=[
+    MIDDLEWARE=[
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
-        'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ],
@@ -123,11 +130,17 @@ settings.configure(
                 'formatter': 'verbose'
             },
         }
-    }
+    },
 )
 
+if django.VERSION < (1, 10):
+    settings_dict['MIDDLEWARE_CLASSES'] = settings_dict.pop('MIDDLEWARE')
+
+
+settings.configure(**settings_dict)
+
+
 try:
-    import django
     setup = django.setup
 except AttributeError:
     pass
@@ -138,9 +151,22 @@ if known_args.show_browser:
     from django_functest.tests.base import HideBrowserMixin
     HideBrowserMixin.display = True
 
-if known_args.firefox_binary:
+
+def set_firefox_binary(path):
     from django_functest.tests.base import FirefoxBase
-    FirefoxBase.firefox_binary = known_args.firefox_binary
+    FirefoxBase.firefox_binary = path
+
+
+if known_args.firefox_binary:
+    set_firefox_binary(known_args.firefox_binary)
+elif 'TEST_FIREFOX_BINARY' in os.environ:
+    set_firefox_binary(os.environ['TEST_FIREFOX_BINARY'])
+
+if known_args.skip_selenium:
+    os.environ['TEST_SKIP_SELENIUM'] = "TRUE"
+
+if known_args.verbosity is None and 'TRAVIS' in os.environ:
+    known_args.verbosity = 2
 
 if known_args.update_migration:
     initial_migration = "django_functest/tests/migrations/0001_initial.py"
@@ -148,7 +174,7 @@ if known_args.update_migration:
         os.unlink(initial_migration)
     argv = [sys.argv[0], "makemigrations", "tests"] + sys.argv[2:]
 else:
-    argv = [sys.argv[0], "test"]
+    argv = [sys.argv[0], "test", "--noinput"]
     if django.VERSION >= (1, 8):
         argv.append("--keepdb")
     if known_args.verbosity:

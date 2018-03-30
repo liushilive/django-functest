@@ -19,7 +19,7 @@ You will also need to add django-functest to your URLs. In your URLconf::
 
 or::
 
-  urlpatterns += [,
+  urlpatterns += [
       url(r'^django_functest/', include('django_functest.urls'))
   ]
 
@@ -27,8 +27,15 @@ or::
 This is only necessary for running tests, so the above can be done conditionally
 for test mode only, if possible.
 
+When running tests, you will also need to have ``localhost`` in your
+``ALLOWED_HOSTS`` setting.
+
 Dependencies
 ============
+
+django-webtest, WebTest and other dependencies are automatically installed. If
+you are using Django 1.11 or later, you should install django-functest 1.0.1 or
+later and django-webtest 1.9.1 or later.
 
 Installing django-functest will install the Python ``selenium`` package
 automatically. However, due the nature of Selenium, if you are writing Selenium
@@ -45,7 +52,7 @@ the browser to use, and note the following:
 
 * Firefox 45 and older can be used with Selenium < 3 without anything additional
   installed. Old versions of Firefox can be found here:
-  https://www.mozilla.org/en-US/firefox/organizations/all/
+  https://ftp.mozilla.org/pub/firefox/releases/
 
   If you need to run your own tests with a different version of Firefox than the
   default one on your system, it is recommended you follow the pattern used by

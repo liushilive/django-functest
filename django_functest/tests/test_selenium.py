@@ -4,13 +4,17 @@ import os
 import unittest
 
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
 from selenium.common.exceptions import NoSuchElementException
 
 from django_functest import AdminLoginMixin, FuncBaseMixin
 
 from .base import ChromeBase, FirefoxBase, PhantomJSBase
 from .models import Thing
+
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 
 
 # Tests for Selenium specific methods
@@ -145,7 +149,7 @@ class TestFuncSeleniumSpecificPhantomJS(TestFuncSeleniumSpecificBase, PhantomJSB
 # Test class attribute `browser_window_size` works correctly:
 
 class TestBrowserSizeBase(object):
-    browser_window_size = (2800, 1400)
+    browser_window_size = (800, 700)
 
     def _get_window_size(self):
         if self._driver.name == "phantomjs":
@@ -155,14 +159,14 @@ class TestBrowserSizeBase(object):
 
     def test_size(self):
         width, height = self._get_window_size()
-        self.assertTrue(2795 < width < 2805)
-        self.assertTrue(1395 < height < 1405)
+        self.assertTrue(795 < width < 805)
+        self.assertTrue(695 < height < 705)
 
     def test_resize(self):
-        self.set_window_size(400, 300)
+        self.set_window_size(700, 500)
         width, height = self._get_window_size()
-        self.assertTrue(395 < width < 405)
-        self.assertTrue(295 < height < 305)
+        self.assertTrue(695 < width < 705)
+        self.assertTrue(495 < height < 505)
 
 
 class TestBrowserSizeFirefox(TestBrowserSizeBase, FirefoxBase):

@@ -12,7 +12,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
-version = "0.2.1-dev"
+version = "1.0.3-dev1"
 
 if sys.argv[-1] == 'publish':
     try:
@@ -52,13 +52,13 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        'django-webtest>=1.7.8',
+        'django-webtest>=1.9.2',
         'selenium>=2.48.0,<3',
         'PyVirtualDisplay>=0.1.4',
         'six>=1.10.0',
         'furl>=0.4.9',
         'pyquery>=1.2.10',
-        'Django>=1.7',
+        'Django>=1.8',
     ] + extra_requires,
     license="BSD",
     zip_safe=False,
@@ -66,8 +66,10 @@ setup(
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Django',
-        'Framework :: Django :: 1.7',
         'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
+        'Framework :: Django :: 1.11',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',

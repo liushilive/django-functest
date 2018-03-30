@@ -8,7 +8,6 @@ import time
 from datetime import datetime
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
 from pyvirtualdisplay import Display
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, NoSuchWindowException, StaleElementReferenceException
@@ -19,6 +18,12 @@ from six import string_types, text_type
 from .base import FuncBaseMixin
 from .exceptions import SeleniumCantUseElement
 from .utils import BrowserSessionToken, CommonMixin, get_session_store
+
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
+
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +138,9 @@ class FuncSeleniumMixin(CommonMixin, FuncBaseMixin):
         """
         Gets the passed in URL, as a literal relative URL, without using reverse.
         """
-        self._get_url_raw(self.live_server_url + url)
+        if not url.startswith(self.live_server_url):
+            url = self.live_server_url + url
+        self._get_url_raw(url)
         self.wait_until_loaded('body')
 
     def is_element_present(self, css_selector):
@@ -398,7 +405,12 @@ class FuncSeleniumMixin(CommonMixin, FuncBaseMixin):
                 handle = possible_window_handles[0]
 
         def f(driver):
-            driver.switch_to_window(handle)
+            if (hasattr(driver, 'switch_to') and
+                    hasattr(driver.switch_to, 'window')):
+                m = driver.switch_to.window
+            else:
+                m = driver.switch_to_window
+            m(handle)
             return driver.current_window_handle == handle
         self.wait_until(f)
         return current_window_handle, handle

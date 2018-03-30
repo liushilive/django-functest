@@ -58,6 +58,7 @@ In your tests.py::
     from django_functest import FuncWebTestMixin, FuncSeleniumMixin, FuncBaseMixin
 
     class ContactTestBase(FuncBaseMixin):
+        # Abstract class, doesn't inherit from TestCase
 
         def test_contact_form(self):
             self.get_url('contact_form')
@@ -66,10 +67,10 @@ In your tests.py::
             self.submit('input[type=submit]')
             self.assertTextPresent("Thanks for your message")
 
-     class ContactWebTest(FuncWebTestMixin, TestCase):
+     class ContactWebTest(ContactTestBase, FuncWebTestMixin, TestCase):
          pass
 
-     class ContactSeleniumTest(FuncSeleniumMixin, LiveServerTestCase):
+     class ContactSeleniumTest(ContactTestBase, FuncSeleniumMixin, LiveServerTestCase):
          pass
 
 In this way, you can write a single test with a high-level API, and run it in
@@ -105,7 +106,9 @@ Firefox versions (>= 47) and all published versions of Selenium (< 3.0).
 
 This can be worked around by downloading an old version of Firefox from
 https://www.mozilla.org/en-US/firefox/organizations/all/ and
-using ``runtests.py --firefox-binary``
+using ``runtests.py --firefox-binary=...``, or, in the case of using tox::
+
+    TEST_FIREFOX_BINARY=... tox
 
 
 Credits

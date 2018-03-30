@@ -3,8 +3,36 @@
 History
 -------
 
-0.2.1 (in development)
-++++++++++++++++++++++
+1.0.3 (under development)
++++++++++++++++++++++++++
+
+* Deprecated ``fill_by_id``. Instead of ``fill_by_id({'foo': 'bar'})`` you
+  should do ``fill({'#foo': 'bar'})``, because it is shorter and more flexible.
+
+
+1.0.2
++++++
+
+* Fixes to cope with WebTest 2.0.28. We now require django-webtest 1.9.2 or
+  later, and only test against the latest WebTest.
+* Fixed some deprecation warnings
+
+1.0.1
++++++
+
+* Fixed incompatibility with django-webtest 1.9.0 and later
+
+1.0
++++
+
+* Added Django 1.11 support.
+* Dropped official Django 1.7 support (may still work).
+
+0.2.1
++++++
+
+* Made :meth:`~django_functest.FuncCommonApi.get_literal_url` accept
+  absolute URLs for Selenium (WebTest already worked by accident).
 
 0.2.0
 +++++
